@@ -17,6 +17,7 @@ const magic1 = 1;
 
 const lines: { x: number; y: number }[][] = [];
 let currentLine: { x: number; y: number }[] = [];
+const redoLine: { x: number; y: number }[][] = [];
 
 const ctx = canvas.getContext("2d");
 
@@ -53,6 +54,7 @@ canvas.addEventListener("mousedown", (e) => {
   cursor.y = e.offsetY;
 
   currentLine = [];
+  redoLine.splice(magic0, redoLine.length);
   currentLine.push({ x: cursor.x, y: cursor.y });
   lines.push(currentLine);
   redraw();
@@ -83,4 +85,28 @@ document.body.append(clearButton);
 clearButton.addEventListener("click", () => {
   lines.splice(magic0, lines.length);
   redraw();
+});
+
+const undoButton = document.createElement("button");
+undoButton.innerHTML = "undo";
+document.body.append(undoButton);
+
+undoButton.addEventListener("click", () => {
+  if (lines.length != 0) {
+    const oldLine: { x: number; y: number }[] = lines.pop()!;
+    redoLine.push(oldLine);
+  }
+  alert("drawing-changed");
+});
+
+const redoButton = document.createElement("button");
+redoButton.innerHTML = "redo";
+document.body.append(redoButton);
+
+redoButton.addEventListener("click", () => {
+  if (redoLine.length != 0) {
+    const oldLine: { x: number; y: number }[] = redoLine.pop()!;
+    lines.push(oldLine);
+  }
+  alert("drawing-changed");
 });
