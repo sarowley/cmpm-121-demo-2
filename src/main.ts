@@ -4,6 +4,8 @@ const gameName = "Sticker Sketchpad";
 
 document.title = gameName;
 
+let stamping = false;
+
 const header = document.createElement("h1");
 header.innerHTML = gameName;
 
@@ -22,6 +24,9 @@ const thickLine = 15;
 
 const thinIcon = "o";
 const thickIcon = "O";
+const antIcon = "🐜";
+const fileIcon = "📁";
+const popIcon = "🍿";
 
 let currentThickness: number = thinLine;
 let currentIcon: string = thinIcon;
@@ -31,20 +36,38 @@ const ctx = canvas.getContext("2d")!;
 class LineCommand {
   points: { x: number; y: number }[];
   thickness: number;
-  constructor(x: number, y: number, thickness: number) {
+  icon: string;
+  stamp: boolean;
+  constructor(
+    x: number,
+    y: number,
+    thickness: number,
+    icon: string,
+    stamp: boolean
+  ) {
     this.points = [{ x, y }];
     this.thickness = thickness;
+    this.icon = icon;
+    this.stamp = stamp;
   }
   execute(ctx: CanvasRenderingContext2D) {
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = this.thickness;
-    ctx?.beginPath();
-    const { x, y } = this.points[firstIndex];
-    ctx?.moveTo(x, y);
-    for (const { x, y } of this.points) {
-      ctx.lineTo(x, y);
+    if (this.stamp) {
+      ctx.fillText(
+        this.icon,
+        this.points[firstIndex].x - magic8,
+        this.points[firstIndex].y + magic16
+      );
+    } else {
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = this.thickness;
+      ctx?.beginPath();
+      const { x, y } = this.points[firstIndex];
+      ctx?.moveTo(x, y);
+      for (const { x, y } of this.points) {
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
   }
   drag(x: number, y: number) {
     this.points.push({ x, y });
@@ -89,7 +112,13 @@ canvas.addEventListener("mouseenter", (e) => {
 });
 
 canvas.addEventListener("mousedown", (e) => {
-  currentLineCommand = new LineCommand(e.offsetX, e.offsetY, currentThickness);
+  currentLineCommand = new LineCommand(
+    e.offsetX,
+    e.offsetY,
+    currentThickness,
+    currentIcon,
+    stamping
+  );
   commands.push(currentLineCommand);
   redoCommands.splice(firstIndex, redoCommands.length);
   canvas.dispatchEvent(event);
@@ -154,6 +183,7 @@ redoButton.addEventListener("click", () => {
 
 const thinButton = document.createElement("button");
 thinButton.innerHTML = "thin";
+stamping = false;
 document.body.append(thinButton);
 
 thinButton.addEventListener("click", () => {
@@ -163,9 +193,40 @@ thinButton.addEventListener("click", () => {
 
 const thickButton = document.createElement("button");
 thickButton.innerHTML = "thick";
+stamping = false;
 document.body.append(thickButton);
 
 thickButton.addEventListener("click", () => {
   currentThickness = thickLine;
   currentIcon = thickIcon;
+});
+
+const antButton = document.createElement("button");
+antButton.innerHTML = "🐜";
+document.body.append(antButton);
+
+antButton.addEventListener("click", () => {
+  //currentThickness = thickLine;
+  currentIcon = antIcon;
+  stamping = true;
+});
+
+const fileButton = document.createElement("button");
+fileButton.innerHTML = "📁";
+document.body.append(fileButton);
+
+fileButton.addEventListener("click", () => {
+  //currentThickness = thickLine;
+  stamping = true;
+  currentIcon = fileIcon;
+});
+
+const popButton = document.createElement("button");
+popButton.innerHTML = "🍿";
+document.body.append(popButton);
+
+popButton.addEventListener("click", () => {
+  //currentThickness = thickLine;
+  stamping = true;
+  currentIcon = popIcon;
 });
