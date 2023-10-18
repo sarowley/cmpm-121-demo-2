@@ -16,16 +16,23 @@ document.body.append(canvas);
 
 const firstIndex = 0;
 
+const thinLine = 4;
+const thickLine = 15;
+
+let currentThickness: number = thinLine;
+
 const ctx = canvas.getContext("2d")!;
 
 class LineCommand {
   points: { x: number; y: number }[];
-  constructor(x: number, y: number) {
+  thickness: number;
+  constructor(x: number, y: number, thickness: number) {
     this.points = [{ x, y }];
+    this.thickness = thickness;
   }
   execute(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
+    ctx.lineWidth = this.thickness;
     ctx?.beginPath();
     const { x, y } = this.points[firstIndex];
     ctx?.moveTo(x, y);
@@ -50,7 +57,7 @@ const event = new Event("drawing-changed");
 
 canvas.addEventListener("mousedown", (e) => {
   cursor = true;
-  currentLineCommand = new LineCommand(e.offsetX, e.offsetY);
+  currentLineCommand = new LineCommand(e.offsetX, e.offsetY, currentThickness);
   commands.push(currentLineCommand);
   redoCommands.splice(firstIndex, redoCommands.length);
   canvas.dispatchEvent(event);
@@ -68,7 +75,7 @@ canvas.addEventListener("mouseup", () => {
 });
 
 canvas.addEventListener("drawing-changed", () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(firstIndex, firstIndex, canvas.width, canvas.height);
   commands.forEach((cmd) => cmd.execute(ctx));
 });
 
@@ -101,4 +108,20 @@ redoButton.addEventListener("click", () => {
     commands.push(redoCommands.pop()!);
     canvas.dispatchEvent(event);
   }
+});
+
+const thinButton = document.createElement("button");
+thinButton.innerHTML = "thin";
+document.body.append(thinButton);
+
+thinButton.addEventListener("click", () => {
+  currentThickness = thinLine;
+});
+
+const thickButton = document.createElement("button");
+thickButton.innerHTML = "thick";
+document.body.append(thickButton);
+
+thickButton.addEventListener("click", () => {
+  currentThickness = thickLine;
 });
