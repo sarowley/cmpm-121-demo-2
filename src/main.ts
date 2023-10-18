@@ -12,6 +12,7 @@ header.innerHTML = gameName;
 const canvas = document.createElement("canvas");
 canvas.width = 256;
 canvas.height = 256;
+canvas.style.cursor = "none";
 document.body.append(canvas);
 
 const firstIndex = 0;
@@ -19,7 +20,11 @@ const firstIndex = 0;
 const thinLine = 4;
 const thickLine = 15;
 
+const thinIcon = "o";
+const thickIcon = "O";
+
 let currentThickness: number = thinLine;
+let currentIcon: string = thinIcon;
 
 const ctx = canvas.getContext("2d")!;
 
@@ -45,18 +50,45 @@ class LineCommand {
     this.points.push({ x, y });
   }
 }
+const magic8 = 8;
+const magic16 = 16;
+
+class CursorCommand {
+  x: number;
+  y: number;
+  icon: string;
+  constructor(x: number, y: number, icon: string) {
+    this.x = x;
+    this.y = y;
+    this.icon = icon;
+  }
+  execute() {
+    ctx.font = "32px monospace";
+    ctx.fillText(this.icon, this.x - magic8, this.y + magic16);
+  }
+}
 
 const commands: LineCommand[] = [];
 const redoCommands: LineCommand[] = [];
 
+let cursorCommand: CursorCommand | null = null;
+
 let currentLineCommand: LineCommand | null = null;
 
-let cursor = false;
-
 const event = new Event("drawing-changed");
+const cursorEvent = new Event("cursor-changed");
+
+canvas.addEventListener("mouseout", () => {
+  cursorCommand = null;
+  canvas.dispatchEvent(cursorEvent);
+});
+
+canvas.addEventListener("mouseenter", (e) => {
+  cursorCommand = new CursorCommand(e.offsetX, e.offsetY, currentIcon);
+  canvas.dispatchEvent(cursorEvent);
+});
 
 canvas.addEventListener("mousedown", (e) => {
-  cursor = true;
   currentLineCommand = new LineCommand(e.offsetX, e.offsetY, currentThickness);
   commands.push(currentLineCommand);
   redoCommands.splice(firstIndex, redoCommands.length);
@@ -64,19 +96,29 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  if (cursor) {
-    currentLineCommand!.drag(e.offsetX, e.offsetY);
-    canvas.dispatchEvent(event);
-  }
+  cursorCommand = new CursorCommand(e.offsetX, e.offsetY, currentIcon);
+  canvas.dispatchEvent(cursorEvent);
+  currentLineCommand!.drag(e.offsetX, e.offsetY);
+  canvas.dispatchEvent(event);
 });
 
 canvas.addEventListener("mouseup", () => {
-  cursor = false;
+  currentLineCommand = null;
+  canvas.dispatchEvent(event);
+  canvas.dispatchEvent(cursorEvent);
 });
 
 canvas.addEventListener("drawing-changed", () => {
   ctx.clearRect(firstIndex, firstIndex, canvas.width, canvas.height);
   commands.forEach((cmd) => cmd.execute(ctx));
+});
+
+canvas.addEventListener("cursor-changed", () => {
+  ctx.clearRect(firstIndex, firstIndex, canvas.width, canvas.height);
+  commands.forEach((cmd) => cmd.execute(ctx));
+  if (CursorCommand) {
+    cursorCommand?.execute();
+  }
 });
 
 const clearButton = document.createElement("button");
@@ -116,6 +158,7 @@ document.body.append(thinButton);
 
 thinButton.addEventListener("click", () => {
   currentThickness = thinLine;
+  currentIcon = thinIcon;
 });
 
 const thickButton = document.createElement("button");
@@ -124,4 +167,5 @@ document.body.append(thickButton);
 
 thickButton.addEventListener("click", () => {
   currentThickness = thickLine;
+  currentIcon = thickIcon;
 });
