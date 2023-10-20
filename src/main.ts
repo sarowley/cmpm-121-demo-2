@@ -57,8 +57,8 @@ class LineCommand {
       ctx.font = `${this.fontSize}px monospace`;
       ctx.fillText(
         this.icon,
-        this.points[firstIndex].x - magic8,
-        this.points[firstIndex].y + magic16
+        this.points[firstIndex].x - xDifference,
+        this.points[firstIndex].y + yDifference
       );
     } else {
       ctx.strokeStyle = "black";
@@ -84,9 +84,9 @@ class LineCommand {
     this.fontSize *= scalar;
   }
 }
-const magic8 = 8;
-const magic16 = 16;
-const magic1 = 1;
+const xDifference = 8;
+const yDifference = 16;
+const numOfClicks = 1;
 
 class CursorCommand {
   x: number;
@@ -99,7 +99,7 @@ class CursorCommand {
   }
   execute() {
     ctx.font = "32px monospace";
-    ctx.fillText(this.icon, this.x - magic8, this.y + magic16);
+    ctx.fillText(this.icon, this.x - xDifference, this.y + yDifference);
   }
 }
 
@@ -140,7 +140,7 @@ canvas.addEventListener("mousedown", (e) => {
 canvas.addEventListener("mousemove", (e) => {
   cursorCommand = new CursorCommand(e.offsetX, e.offsetY, currentIcon);
   canvas.dispatchEvent(cursorEvent);
-  if (e.buttons == magic1) {
+  if (e.buttons == numOfClicks) {
     currentLineCommand!.drag(e.offsetX, e.offsetY);
     canvas.dispatchEvent(event);
   }
