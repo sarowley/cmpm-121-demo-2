@@ -19,6 +19,8 @@ document.body.append(canvas);
 
 const firstIndex = 0;
 
+const hex = 16;
+
 const thinLine = 4;
 const thickLine = 15;
 
@@ -26,6 +28,8 @@ const fontSize = 32;
 
 const thinIcon = "o";
 const thickIcon = "O";
+
+let currentColor = "000000";
 
 let currentThickness: number = thinLine;
 let currentIcon: string = thinIcon;
@@ -38,19 +42,22 @@ class LineCommand {
   icon: string;
   fontSize: number;
   stamp: boolean;
+  color: string;
   constructor(
     x: number,
     y: number,
     fontSize: number,
     thickness: number,
     icon: string,
-    stamp: boolean
+    stamp: boolean,
+    color: string
   ) {
     this.points = [{ x, y }];
     this.thickness = thickness;
     this.icon = icon;
     this.fontSize = fontSize;
     this.stamp = stamp;
+    this.color = color;
   }
   execute(ctx: CanvasRenderingContext2D) {
     if (this.stamp) {
@@ -61,7 +68,7 @@ class LineCommand {
         this.points[firstIndex].y + yDifference
       );
     } else {
-      ctx.strokeStyle = "black";
+      ctx.strokeStyle = `#${this.color}`;
       ctx.lineWidth = this.thickness;
       ctx?.beginPath();
       const { x, y } = this.points[firstIndex];
@@ -130,7 +137,8 @@ canvas.addEventListener("mousedown", (e) => {
     fontSize,
     currentThickness,
     currentIcon,
-    stamping
+    stamping,
+    currentColor
   );
   commands.push(currentLineCommand);
   redoCommands.splice(firstIndex, redoCommands.length);
@@ -277,4 +285,17 @@ exportButton.addEventListener("click", () => {
   anchor.href = canvasToExport.toDataURL("image/png");
   anchor.download = "sketchpad.png";
   anchor.click();
+});
+
+const colorSlider = document.getElementById("slider") as HTMLInputElement;
+colorSlider.style.accentColor = currentColor;
+
+colorSlider.addEventListener("input", () => {
+  const color = Math.round(Number(colorSlider.value)).toString(hex);
+  if (color == "0") {
+    currentColor = "000000";
+  } else {
+    currentColor = color;
+  }
+  colorSlider.style.accentColor = `#${currentColor}`;
 });
