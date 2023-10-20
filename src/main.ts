@@ -72,6 +72,7 @@ class LineCommand {
 }
 const magic8 = 8;
 const magic16 = 16;
+const magic1 = 1;
 
 class CursorCommand {
   x: number;
@@ -124,8 +125,10 @@ canvas.addEventListener("mousedown", (e) => {
 canvas.addEventListener("mousemove", (e) => {
   cursorCommand = new CursorCommand(e.offsetX, e.offsetY, currentIcon);
   canvas.dispatchEvent(cursorEvent);
-  currentLineCommand!.drag(e.offsetX, e.offsetY);
-  canvas.dispatchEvent(event);
+  if (e.buttons == magic1) {
+    currentLineCommand!.drag(e.offsetX, e.offsetY);
+    canvas.dispatchEvent(event);
+  }
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -199,8 +202,6 @@ thickButton.addEventListener("click", () => {
 });
 
 const antButton = document.createElement("button");
-document.body.append(antButton);
-antButton.innerHTML = "🐜";
 const fileButton = document.createElement("button");
 const popButton = document.createElement("button");
 const stampList: { buttonName: HTMLElement; icon: string }[] = [
@@ -211,8 +212,8 @@ const stampList: { buttonName: HTMLElement; icon: string }[] = [
 
 function addButtons(stampList: { buttonName: HTMLElement; icon: string }[]) {
   stampList.forEach((element) => {
-    // document.body.append(element.buttonName);
-    // element.buttonName.innerHTML = element.icon;
+    document.body.append(element.buttonName);
+    element.buttonName.innerHTML = element.icon;
     element.buttonName.addEventListener("click", () => {
       currentIcon = element.icon;
       stamping = true;
@@ -221,3 +222,23 @@ function addButtons(stampList: { buttonName: HTMLElement; icon: string }[]) {
   });
 }
 addButtons(stampList);
+
+const customButton = document.createElement("button");
+document.body.append(customButton);
+customButton.innerHTML = "Custom Sticker";
+customButton.addEventListener("click", () => {
+  let lastIcon = "test";
+  let text = prompt("Custom sticker", `${lastIcon}`);
+  if (text == null || text == "") {
+    text = lastIcon;
+  }
+  lastIcon = text;
+  currentIcon = text!;
+  stamping = true;
+  const customStamp = document.createElement("button") as HTMLElement;
+  // const buttons: HTMLDivElement = document.querySelector("#buttons")!;
+  customStamp.innerHTML = text;
+  document.body.append(customStamp);
+  stampList.push({ buttonName: customStamp, icon: text });
+  addButtons(stampList);
+});
