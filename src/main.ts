@@ -22,6 +22,8 @@ const firstIndex = 0;
 const thinLine = 4;
 const thickLine = 15;
 
+const fontSize = 32;
+
 const thinIcon = "o";
 const thickIcon = "O";
 
@@ -34,10 +36,12 @@ class LineCommand {
   points: { x: number; y: number }[];
   thickness: number;
   icon: string;
+  fontSize: number;
   stamp: boolean;
   constructor(
     x: number,
     y: number,
+    fontSize: number,
     thickness: number,
     icon: string,
     stamp: boolean
@@ -45,10 +49,12 @@ class LineCommand {
     this.points = [{ x, y }];
     this.thickness = thickness;
     this.icon = icon;
+    this.fontSize = fontSize;
     this.stamp = stamp;
   }
   execute(ctx: CanvasRenderingContext2D) {
     if (this.stamp) {
+      ctx.font = `${this.fontSize}px monospace`;
       ctx.fillText(
         this.icon,
         this.points[firstIndex].x - magic8,
@@ -68,6 +74,14 @@ class LineCommand {
   }
   drag(x: number, y: number) {
     this.points.push({ x, y });
+  }
+  scale(scalar: number) {
+    this.points.forEach((element) => {
+      element.x *= scalar;
+      element.y *= scalar;
+    });
+    this.thickness *= scalar;
+    this.fontSize *= scalar;
   }
 }
 const magic8 = 8;
@@ -113,6 +127,7 @@ canvas.addEventListener("mousedown", (e) => {
   currentLineCommand = new LineCommand(
     e.offsetX,
     e.offsetY,
+    fontSize,
     currentThickness,
     currentIcon,
     stamping
@@ -241,4 +256,25 @@ customButton.addEventListener("click", () => {
   document.body.append(customStamp);
   stampList.push({ buttonName: customStamp, icon: text });
   addButtons(stampList);
+});
+
+const bigAntCanvasSize = 4;
+const antCanvasSize = 0.25;
+
+const exportButton = document.createElement("button");
+document.body.append(exportButton);
+exportButton.innerHTML = "Export";
+exportButton.addEventListener("click", () => {
+  const canvasToExport = document.createElement("canvas");
+  canvasToExport.width = 1024;
+  canvasToExport.height = 1024;
+  const exportContext = canvasToExport.getContext("2d");
+  commands.forEach((cmd) => cmd.scale(bigAntCanvasSize));
+  commands.forEach((cmd) => cmd.execute(exportContext!));
+  commands.forEach((cmd) => cmd.scale(antCanvasSize));
+
+  const anchor = document.createElement("a");
+  anchor.href = canvasToExport.toDataURL("image/png");
+  anchor.download = "sketchpad.png";
+  anchor.click();
 });
