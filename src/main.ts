@@ -24,9 +24,6 @@ const thickLine = 15;
 
 const thinIcon = "o";
 const thickIcon = "O";
-const antIcon = "🐜";
-const fileIcon = "📁";
-const popIcon = "🍿";
 
 let currentThickness: number = thinLine;
 let currentIcon: string = thinIcon;
@@ -183,50 +180,44 @@ redoButton.addEventListener("click", () => {
 
 const thinButton = document.createElement("button");
 thinButton.innerHTML = "thin";
-stamping = false;
 document.body.append(thinButton);
 
 thinButton.addEventListener("click", () => {
+  stamping = false;
   currentThickness = thinLine;
   currentIcon = thinIcon;
 });
 
 const thickButton = document.createElement("button");
 thickButton.innerHTML = "thick";
-stamping = false;
 document.body.append(thickButton);
 
 thickButton.addEventListener("click", () => {
+  stamping = false;
   currentThickness = thickLine;
   currentIcon = thickIcon;
 });
 
 const antButton = document.createElement("button");
-antButton.innerHTML = "🐜";
 document.body.append(antButton);
-
-antButton.addEventListener("click", () => {
-  //currentThickness = thickLine;
-  currentIcon = antIcon;
-  stamping = true;
-});
-
+antButton.innerHTML = "🐜";
 const fileButton = document.createElement("button");
-fileButton.innerHTML = "📁";
-document.body.append(fileButton);
-
-fileButton.addEventListener("click", () => {
-  //currentThickness = thickLine;
-  stamping = true;
-  currentIcon = fileIcon;
-});
-
 const popButton = document.createElement("button");
-popButton.innerHTML = "🍿";
-document.body.append(popButton);
+const stampList: { buttonName: HTMLElement; icon: string }[] = [
+  { buttonName: antButton, icon: "🐜" },
+  { buttonName: fileButton, icon: "📁" },
+  { buttonName: popButton, icon: "🍿" },
+];
 
-popButton.addEventListener("click", () => {
-  //currentThickness = thickLine;
-  stamping = true;
-  currentIcon = popIcon;
-});
+function addButtons(stampList: { buttonName: HTMLElement; icon: string }[]) {
+  stampList.forEach((element) => {
+    // document.body.append(element.buttonName);
+    // element.buttonName.innerHTML = element.icon;
+    element.buttonName.addEventListener("click", () => {
+      currentIcon = element.icon;
+      stamping = true;
+      stampList.pop();
+    });
+  });
+}
+addButtons(stampList);
